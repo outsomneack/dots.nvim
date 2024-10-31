@@ -17,7 +17,32 @@ require("lazy").setup({
 	{
 		"rebelot/kanagawa.nvim",
 		config = function()
-			vim.cmd.colorscheme("kanagawa-wave")
+			vim.cmd.colorscheme("kanagawa-dragon")
 		end,
 	},
+    {
+        "nvim-treesitter/nvim-treesitter",
+        config = function()
+            require("nvim-treesitter.configs").setup({
+                ensure_installed = { "c", "lua", "vim", "vimdoc", "query" },
+                auto_install = true,
+
+                hightlight = {
+                    enable = true,
+                },
+                incremental_selection = {
+                    enable = true,
+                    keymaps = {
+                        init_selection = "<Leader>ss",
+                        node_incremental = "<Leader>si",
+                        scope_incremental = "<Leader>sc",
+                        node_decremental = "<Leader>sd",
+                    },
+                },
+            })
+        end,
+    },
+    {
+        "nvim-treesitter/nvim-treesitter-textobjects",
+    },
 })
