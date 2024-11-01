@@ -2,24 +2,27 @@
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  local lazyrepo = "https://github.com/folke/lazy.nvim.git"
-  local out = vim.fn.system({ "git", 
-	  "clone", 
-	  "--filter=blob:none", 
-	  "--branch=stable", 
-	  lazyrepo, 
-	  lazypath 
-  })
+    local lazyrepo = "https://github.com/folke/lazy.nvim.git"
+    local out = vim.fn.system({ "git", 
+    "clone", 
+    "--filter=blob:none", 
+    "--branch=stable", 
+    lazyrepo, 
+    lazypath 
+})
 end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
-	{
-		"rebelot/kanagawa.nvim",
-		config = function()
-			vim.cmd.colorscheme("kanagawa-dragon")
-		end,
-	},
+    {
+        "rebelot/kanagawa.nvim",
+    },
+    {
+        "Mofiqul/vscode.nvim",
+        config = function()
+            vim.cmd.colorscheme("vscode")
+        end,
+    },
     {
         "nvim-treesitter/nvim-treesitter",
         config = function()
@@ -39,10 +42,144 @@ require("lazy").setup({
                         node_decremental = "<Leader>sd",
                     },
                 },
+                textobjects = {
+                    select = {
+                        enable = true,
+
+                        -- Automatically jump forward to textobj, similar to targets.vim
+                        lookahead = true,
+
+                        keymaps = {
+                            -- You can use the capture groups defined in textobjects.scm
+                            ["af"] = "@function.outer",
+                            ["if"] = "@function.inner",
+                            ["ac"] = "@class.outer",
+                            -- You can optionally set descriptions to the mappings (used in the desc parameter of
+                            -- nvim_buf_set_keymap) which plugins like which-key display
+                            ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
+                            -- You can also use captures from other query groups like `locals.scm`
+                            ["as"] = { query = "@local.scope", query_group = "locals", desc = "Select language scope" },
+                        },
+                        -- You can choose the select mode (default is charwise 'v')
+                        --
+                        -- Can also be a function which gets passed a table with the keys
+                        -- * query_string: eg '@function.inner'
+                        -- * method: eg 'v' or 'o'
+                        -- and should return the mode ('v', 'V', or '<c-v>') or a table
+                        -- mapping query_strings to modes.
+                        selection_modes = {
+                            ['@parameter.outer'] = 'v', -- charwise
+                            ['@function.outer'] = 'V', -- linewise
+                            ['@class.outer'] = '<c-v>', -- blockwise
+                        },
+                        -- If you set this to `true` (default is `false`) then any textobject is
+                        -- extended to include preceding or succeeding whitespace. Succeeding
+                        -- whitespace has priority in order to act similarly to eg the built-in
+                        -- `ap`.
+                        --
+                        -- Can also be a function which gets passed a table with the keys
+                        -- * query_string: eg '@function.inner'
+                        -- * selection_mode: eg 'v'
+                        -- and should return true or false
+                        include_surrounding_whitespace = true,
+                    },
+                },
             })
         end,
     },
     {
         "nvim-treesitter/nvim-treesitter-textobjects",
+    },
+    {
+        "neovim/nvim-lspconfig",
+    },
+    {
+        "williamboman/mason.nvim",
+        config = function()
+            require("mason").setup()
+            require("mason-lspconfig").setup_handlers({
+                function (server_name) -- default handler (optional)
+                    require("lspconfig")[server_name].setup {}
+                end,
+            })
+        end,
+    },
+    {
+        "williamboman/mason-lspconfig.nvim",
+        dependencies = { "mason.nvim" },
+        config = function()
+            require("mason-lspconfig").setup()
+        end,
+    },
+    {
+        'nvim-lualine/lualine.nvim',
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            require('lualine').setup {
+                options = {
+                    icons_enabled = true,
+                    theme = 'auto',
+                    component_separators = { left = '', right = ''},
+                    section_separators = { left = '', right = ''},
+                    disabled_filetypes = {
+                        statusline = {},
+                        winbar = {},
+                    },
+                    ignore_focus = {},
+                    always_divide_middle = true,
+                    always_show_tabline = true,
+                    globalstatus = false,
+                    refresh = {
+                        statusline = 1000,
+                        tabline = 1000,
+                        winbar = 1000,
+                    }
+                },
+                sections = {
+                    lualine_a = {'mode'},
+                    lualine_b = {'branch', 'diff', 'diagnostics'},
+                    lualine_c = {'filename'},
+                    lualine_x = {'encoding', 'fileformat', 'filetype'},
+                    lualine_y = {'progress'},
+                    lualine_z = {'location'}
+                },
+                inactive_sections = {
+                    lualine_a = {},
+                    lualine_b = {},
+                    lualine_c = {'filename'},
+                    lualine_x = {'location'},
+                    lualine_y = {},
+                    lualine_z = {}
+                },
+                tabline = {},
+                winbar = {},
+                inactive_winbar = {},
+                extensions = {}
+            }
+        end
+    },
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        opts = {
+        },
+        keys = {
+            {
+                "<leader>?",
+                function()
+                    require("which-key").show({ global = false })
+                end,
+                desc = "Buffer Local Keymaps (which-key)",
+            },
+        },
+    },
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        build = "cd app && yarn install",
+        init = function()
+            vim.g.mkdp_filetypes = { "markdown" }
+        end,
+        ft = { "markdown" },
     },
 })
