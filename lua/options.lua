@@ -47,3 +47,4 @@ vim.api.nvim_set_keymap('n', '<leader>g', ':w<CR>:!git add %<CR>:!git commit -m 
 -- Reload init.lua
 vim.api.nvim_set_keymap('n', '<leader>rv', ':source ~/.config/nvim/init.lua<CR>', { noremap = true, silent = true })
 
+vim.opt_local.conceallevel = 2
